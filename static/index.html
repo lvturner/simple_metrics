@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metrics Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .tile {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-color: #007bff;
+      color: white;
+      border: 1px solid #fff;
+      font-size: 1.2rem;
+      box-sizing: border-box;
+    }
+
+    .tile h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .tile p {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="tileContainer"></div>
+
+  <script>
+    const container = document.getElementById('tileContainer');
+
+    // Fetch metrics from the API
+    async function fetchMetrics() {
+      const res = await fetch('/api/metrics');
+      const metrics = await res.json();
+      renderMetrics(metrics);
+    }
+
+    // Render metrics as tiles
+    function renderMetrics(metrics) {
+      container.innerHTML = ''; // Clear existing tiles
+
+      const tileCount = metrics.length;
+      let rows, cols;
+
+      if (tileCount === 1) {
+        rows = 1;
+        cols = 1;
+      } else if (tileCount === 2) {
+        rows = 1;
+        cols = 2;
+      } else if (tileCount === 3) {
+        rows = 2;
+        cols = 2;
+      } else {
+        const sqrt = Math.ceil(Math.sqrt(tileCount));
+        rows = sqrt;
+        cols = Math.ceil(tileCount / rows);
+      }
+
+      const tileWidth = 100 / cols;
+      const tileHeight = 100 / rows;
+
+      metrics.forEach(metric => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.style.width = `${tileWidth}%`;
+        tile.style.height = `${tileHeight}%`;
+
+        tile.innerHTML = `
+          <h2>${metric.name}</h2>
+          <p>${metric.count}</p>
+        `;
+
+        container.appendChild(tile);
+      });
+    }
+
+    // Fetch metrics on page load
+    fetchMetrics();
+
+    // Optionally, refresh data every 5 seconds
+    setInterval(fetchMetrics, 5000);
+  </script>
+</body>
+</html>
