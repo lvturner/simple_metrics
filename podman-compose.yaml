@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  skpi:
+    image: skpi:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.skpi.rule=Host(`skpi.makestuff.blog`)"
+      - "traefik.http.routers.skpi.entrypoints=websecure"
+      - "traefik.http.routers.skpi.tls.certresolver=myresolver"
+      - "traefik.http.services.skpi.loadbalancer.server.port=8080"
