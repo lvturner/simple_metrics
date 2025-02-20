@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Metrics</title>
+</head>
+
+<body>
+    <h1>Simple Metrics</h1>
+
+    <h2>Add Metric</h2>
+    <form id="addMetricForm">
+        <label for="metricName">Metric Name:</label>
+        <input type="text" id="metricName" name="metricName" required>
+        <button type="submit">Add Metric</button>
+    </form>
+
+    <h2>Add Metric Entry</h2>
+    <form id="addMetricEntryForm">
+        <label for="entryMetricName">Metric Name:</label>
+        <select id="entryMetricName" name="entryMetricName" required>
+            <option value="" disabled selected>Select a metric</option>
+        </select>
+        <label for="entryValue">Value:</label>
+        <input type="number" id="entryValue" name="entryValue" required>
+        <button type="submit">Add Metric Entry</button>
+    </form>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fetch metrics and populate the dropdown
+            fetch('/api/metrics')
+            .then(response => response.json())
+            .then(data => {
+                const metricSelect = document.getElementById('entryMetricName');
+                data.forEach(metric => {
+                    const option = document.createElement('option');
+                    option.value = metric.name;
+                    option.textContent = metric.name;
+                    metricSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching metrics:', error);
+            });
+        });
+        document.getElementById('addMetricForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const metricName = document.getElementById('metricName').value;
+
+            fetch('/api/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: metricName })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Metric added successfully');
+                    } else {
+                        alert('Failed to add metric');
+                    }
+                });
+        });
+
+        document.getElementById('addMetricEntryForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const entryMetricName = document.getElementById('entryMetricName').value;
+            const entryValue = document.getElementById('entryValue').value;
+
+            fetch('/api/addMetricEntry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: entryMetricName, value: parseInt(entryValue) })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Metric entry added successfully');
+                    } else {
+                        alert('Failed to add metric entry');
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>
