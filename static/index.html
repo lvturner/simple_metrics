@@ -23,7 +23,6 @@
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      background-color: #007bff;
       color: white;
       border: 1px solid #fff;
       font-size: 1.2rem;
@@ -47,9 +46,36 @@
   <script>
     const container = document.getElementById('tileContainer');
 
+    // Define a palette of complimentary colors
+    const colorPalette = [
+      '#FF5733', // Vibrant Orange
+      '#33FF57', // Bright Green
+      '#3357FF', // Bold Blue
+      '#F39C12', // Warm Yellow
+      '#9B59B6', // Deep Purple
+      '#1ABC9C', // Cool Teal
+      '#E74C3C', // Strong Red
+      '#2980B9', // Rich Blue
+    ];
+
+    // Hash function to generate a pseudo-random number
+    function hashStringToNumber(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash); // Simple hash algorithm
+      }
+      return Math.abs(hash);
+    }
+
+    // Get a deterministic color based on a metric name
+    function getColorForMetric(metricName) {
+      const hash = hashStringToNumber(metricName);
+      return colorPalette[hash % colorPalette.length]; // Map hash to a color in the palette
+    }
+
     // Fetch metrics from the API
     async function fetchMetrics() {
-      const res = await fetch('/api/metrics');
+      const res = await fetch('http://localhost:8080/api/metrics');
       const metrics = await res.json();
       renderMetrics(metrics);
     }
@@ -85,6 +111,11 @@
         tile.style.width = `${tileWidth}%`;
         tile.style.height = `${tileHeight}%`;
 
+        // Assign a deterministic background color based on the metric name
+        const color = getColorForMetric(metric.name);
+        tile.style.backgroundColor = color;
+
+        // Add metric name and count
         tile.innerHTML = `
           <h2>${metric.name}</h2>
           <p>${metric.count}</p>
