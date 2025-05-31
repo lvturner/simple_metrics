@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
-	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	_ "github.com/go-sql-driver/mysql" // SQLite driver
 )
 
 type Metric struct {
@@ -17,16 +18,28 @@ type Metric struct {
 var db *sql.DB
 
 func main() {
-	// Initialize database
-	var err error
-	db, err = sql.Open("sqlite3", "./metrics.db")
+	dsn := os.Getenv("DATABASE_DSN")
+	if dsn == "" {
+		log.Fatal("DATABASE_DSN environment variable not set")
+	}
+
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Create table if it doesn't exist
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS metrics (name TEXT PRIMARY KEY, count INTEGER)`)
+	if err = db.Ping(); err != nil {
+		log.Fatal("Database connection failed:", err)
+	}
+
+	_, err = db.Exec(`
+			CREATE TABLE IF NOT EXISTS metrics(
+				id INT AUTO_INCREMENT PRIMARY KEY,
+				name VARCHAR(255) NOT NULL,
+				event_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+	`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +57,7 @@ func main() {
 
 // Get metrics from the database
 func getMetrics(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT name, total_count FROM metrics")
+	rows, err := db.Query("SELECT name, COUNT(*) as total_count FROM metrics GROUP BY name")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
