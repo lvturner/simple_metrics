@@ -23,7 +23,8 @@ func main() {
 		log.Fatal("DATABASE_DSN environment variable not set")
 	}
 
-	db, err := sql.Open("mysql", dsn)
+	var err error
+	db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
