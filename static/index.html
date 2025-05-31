@@ -75,7 +75,7 @@
 
     // Fetch metrics from the API
     async function fetchMetrics() {
-      const res = await fetch('http://localhost:8080/api/metrics');
+      const res = await fetch('/api/metrics');
       const metrics = await res.json();
       renderMetrics(metrics);
     }
