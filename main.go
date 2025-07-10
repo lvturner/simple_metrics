@@ -11,8 +11,9 @@ import (
 )
 
 type Metric struct {
-	Name         string `json:"name"`
-	Count        int    `json:"count"`
+	ID           int    `json:"id"`
+	EventTime    string `json:"event_time"`
+	Note         string `json:"note"`
 	CategoryID   int    `json:"category_id"`
 	CategoryName string `json:"category_name"`
 }
@@ -39,9 +40,15 @@ func main() {
 	_, err = db.Exec(`
 			CREATE TABLE IF NOT EXISTS metrics(
 				id INT AUTO_INCREMENT PRIMARY KEY,
-				name VARCHAR(255) NOT NULL,
-				event_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				event_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				note TEXT DEFAULT NULL,
+				category_id INT NOT NULL
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+			CREATE TABLE IF NOT EXISTS categories(
+				id INT AUTO_INCREMENT PRIMARY KEY,
+				name VARCHAR(100) COLLATE utf8mb4_bin DEFAULT NULL
+			) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 	`)
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +67,11 @@ func main() {
 
 // Get metrics from the database
 func getMetrics(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT name, COUNT(*) as total_count FROM metrics GROUP BY name")
+	rows, err := db.Query(`
+		SELECT metrics.id, metrics.event_time, metrics.note, metrics.category_id, categories.name 
+		FROM metrics 
+		JOIN categories ON metrics.category_id = categories.id
+	`)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -70,7 +81,7 @@ func getMetrics(w http.ResponseWriter, r *http.Request) {
 	var metrics []Metric
 	for rows.Next() {
 		var metric Metric
-		if err := rows.Scan(&metric.Name, &metric.Count); err != nil {
+		if err := rows.Scan(&metric.ID, &metric.EventTime, &metric.Note, &metric.CategoryID, &metric.CategoryName); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
