@@ -68,7 +68,7 @@ func main() {
 // Get metrics from the database
 func getMetrics(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(`
-		SELECT metrics.id, metrics.event_time, metrics.note, metrics.category_id, categories.name 
+		SELECT metrics.id, metrics.event_time, metrics.note, metrics.category_id, categories.name AS category_name 
 		FROM metrics 
 		JOIN categories ON metrics.category_id = categories.id
 	`)

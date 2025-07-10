@@ -112,13 +112,13 @@
         tile.style.height = `${tileHeight}%`;
 
         // Assign a deterministic background color based on the metric name
-        const color = getColorForMetric(metric.name);
+        const color = getColorForMetric(metric.category_name);
         tile.style.backgroundColor = color;
 
-        // Add metric name and count
+        // Add metric category name and note
         tile.innerHTML = `
-          <h2>${metric.name}</h2>
-          <p>${metric.count}</p>
+          <h2>${metric.category_name}</h2>
+          <p>${metric.note}</p>
         `;
 
         container.appendChild(tile);
