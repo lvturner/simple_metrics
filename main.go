@@ -38,17 +38,22 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-			CREATE TABLE IF NOT EXISTS metrics(
-				id INT AUTO_INCREMENT PRIMARY KEY,
-				event_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				note TEXT DEFAULT NULL,
-				category_id INT NOT NULL
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+	CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) COLLATE utf8mb4_bin NOT NULL  -- Changed DEFAULT NULL to NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;  -- Changed to InnoDB
 
-			CREATE TABLE IF NOT EXISTS categories(
-				id INT AUTO_INCREMENT PRIMARY KEY,
-				name VARCHAR(100) COLLATE utf8mb4_bin DEFAULT NULL
-			) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+CREATE TABLE IF NOT EXISTS metrics (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    note TEXT DEFAULT NULL,
+    category_id INT NOT NULL,
+    CONSTRAINT fk_metrics_category  -- Added foreign key constraint
+        FOREIGN KEY (category_id)
+        REFERENCES categories(id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 	`)
 	if err != nil {
 		log.Fatal(err)
