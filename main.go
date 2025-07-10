@@ -11,8 +11,10 @@ import (
 )
 
 type Metric struct {
-	Name  string `json:"name"`
-	Count int    `json:"count"`
+	Name         string `json:"name"`
+	Count        int    `json:"count"`
+	CategoryID   int    `json:"category_id"`
+	CategoryName string `json:"category_name"`
 }
 
 var db *sql.DB
